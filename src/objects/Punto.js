@@ -8,7 +8,7 @@ class Punto {
   draw() {
     push();
     strokeWeight(3);
-    if (this.type == 1) stroke(255, 0, 0);
+    if (this.type === 1) stroke(255, 0, 0);
     else stroke(0, 255, 0);
     point(this.x, this.y);
     pop();

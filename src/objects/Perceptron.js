@@ -28,4 +28,8 @@ class Perceptron {
   fSigmoid(x) {
     return 1 / (1 + Math.exp(-x));
   }
+  //Función por paso
+  fStep(x) {
+    return x > 0 ? 1 : -1;
+  }
 }
