@@ -38,7 +38,7 @@ Función sigmoide:
 
 ```js
 fSigmoid(x);
-return 1 / (1 + Math.exp(-x));
+    return 1 / (1 + Math.exp(-x));
 ```
 
 Para entrenar la neurona usamos la formula básica de entrenamiento, que consiste clasificar los datos en base a los pesos actuales, luego restarle el valor real al resultado y ajustar los pesos y el bias en base a ese error multiplicado por la tasa de aprendizaje para moverse a pasos más pequeños y evitar que se reconfigure solo con la última entrada.
@@ -76,5 +76,6 @@ La única parte importante del código sería donde se clasifican los puntos del
 ```
 
 # Salida:
+[GitHub Pages](https://chaidez13.github.io/perceptron_RNA/)
 
 ![Gif del funcionamiento](/src/assets/PRNA.gif)
