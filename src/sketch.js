@@ -38,16 +38,23 @@ function draw() {
   //Dibujar la linea pendiente
   line(-xCenter, -xCenter * M, xCenter, xCenter * M);
   //Asignar el tipo a cada punto y colorearlo
+
+  let check = 0;
   puntos.forEach((e) => {
     e.type = perceptron.clasificar([e.x, e.y]);
     e.draw();
+    let realType = e.y > M * e.x ? 1 : 0;
+    if (realType == e.type) {
+      check++;
+    }
   });
   //Crear un nuevo punto aleatorio con el que se entrenara al perceptrón
   let x = Math.random() * (2 * xCenter) - xCenter;
   let y = Math.random() * (2 * yCenter) - yCenter;
-  perceptron.entrenamiento([x, y], y > M * x ? 1 : -1);
+  perceptron.entrenamiento([x, y], y > M * x ? 1 : 0);
 
-  //noLoop();
+  console.log(check)
+  if (check >= PUNTOS*0.95) noLoop();
 }
 
 //Funciones auxiliares
