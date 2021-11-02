@@ -53,7 +53,7 @@ function draw() {
   let y = Math.random() * (2 * yCenter) - yCenter;
   perceptron.entrenamiento([x, y], y > M * x ? 1 : 0);
 
-  console.log(check)
+  //console.log(check)
   if (check >= PUNTOS*0.95) noLoop();
 }
 
