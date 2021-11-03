@@ -7,16 +7,19 @@ const xCenter = B_WIDTH / 2;
 const yCenter = B_HEIGHT / 2;
 
 let cnv;
-let perceptron;
-let puntos = [];
+//let neuron;
+//let puntos = [];
+let rna;
 
 function setup() {
   cnv = createCanvas(B_WIDTH, B_HEIGHT);
   centerCanvas();
 
   frameRate(2);
+  rna = new RNA(3, [2, 4, 2], 0.5);
+  /*
   //Crear la neurona con el perceptrón con dos entradas y 0.2 de tasa de aprendizaje
-  perceptron = new Perceptron(2, 0.2);
+  neuron = new Neurona(2, 0.2);
   //Crear los primerios PUNTOS de puntos fijos
   for (let i = 0; i < PUNTOS; i++) {
     puntos.push(
@@ -25,7 +28,7 @@ function setup() {
         Math.random() * (2 * yCenter) - yCenter
       )
     );
-  }
+  }*/
 }
 
 function draw() {
@@ -37,11 +40,12 @@ function draw() {
   scale(1, -1);
   //Dibujar la linea pendiente
   line(-xCenter, -xCenter * M, xCenter, xCenter * M);
-  //Asignar el tipo a cada punto y colorearlo
-
+  rna.clasificar([1, 3]);
+  rna.entrenar([1, 3], [0, 1]);
+  /*   //Asignar el tipo a cada punto y colorearlo
   let check = 0;
   puntos.forEach((e) => {
-    e.type = perceptron.clasificar([e.x, e.y]);
+    e.type = neuron.clasificar([e.x, e.y]);
     e.draw();
     let realType = e.y > M * e.x ? 1 : 0;
     if (realType == e.type) {
@@ -51,12 +55,13 @@ function draw() {
   //Crear un nuevo punto aleatorio con el que se entrenara al perceptrón
   let x = Math.random() * (2 * xCenter) - xCenter;
   let y = Math.random() * (2 * yCenter) - yCenter;
-  perceptron.entrenamiento([x, y], y > M * x ? 1 : 0);
+  neuron.entrenamiento([x, y], y > M * x ? 1 : 0);
 
-  console.log(check)
-  if (check >= PUNTOS*0.95) noLoop();
+  console.log(check) */
+
+  //if (check >= PUNTOS*0.95)
+  noLoop();
 }
-
 //Funciones auxiliares
 function drawAxis() {
   push();

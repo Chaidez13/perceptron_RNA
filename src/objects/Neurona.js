@@ -1,7 +1,7 @@
 const MAX = 1;
 const MIN = -1;
 
-class Perceptron {
+class Neurona {
   constructor(n_inputs, alfa) {
     this.weights = [];
     for (let i = 0; i < n_inputs; i++) {
@@ -22,14 +22,6 @@ class Perceptron {
   //Clasificar con las entradas y los pesos
   clasificar(inputs) {
     const reducer = (cV, pV, i) => pV * this.weights[i] + cV;
-    return this.fSigmoid(inputs.reduce(reducer, 0) + this.bias);
-  }
-  //Función sigmoide
-  fSigmoid(x) {
-    return 1 / (1 + Math.exp(-x));
-  }
-  //Función por paso
-  fStep(x) {
-    return x > 0 ? 1 : -1;
+    return fSigmoid(inputs.reduce(reducer, 0) + this.bias);
   }
 }
