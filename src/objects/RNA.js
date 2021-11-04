@@ -1,119 +1,132 @@
 class RNA {
-  /**
-   * Constructor de la red neuronal
+  /** Inicialización de las variables necesarias
    * @constructor
-   * @param {int} capas
-   * @param {array} neuronas_capa
-   * @param {float} tasa
+   * @param {int} n_entrada
+   * @param {int} n_oculta
+   * @param {int} n_salida
+   * @param {float} alfa
    */
-  constructor(capas, neuronas_capa, tasa) {
-    this.pesos = [];
-    this.bias = [];
-    this.salidas = [];
-    this.nc = neuronas_capa;
-    this.alfa = tasa;
-    for (let i = 0; i < capas - 1; i++) {
-      this.pesos[i] = new Array(neuronas_capa[i]);
-      this.bias[i] = new Array(neuronas_capa[i + 1]);
-      this.salidas[i] = new Array(neuronas_capa[i + 1]);
-      for (let j = 0; j < neuronas_capa[i]; j++) {
-        this.pesos[i][j] = new Array(neuronas_capa[j + 1]);
-        for (let k = 0; k < neuronas_capa[i + 1]; k++) {
-          console.log(i, j, k);
-          this.pesos[i][j][k] = this.pesoInicial();
-          this.bias[i][k] = this.pesoInicial();
-        }
-      }
-    }
+  constructor(n_entrada, n_oculta, n_salida, alfa) {
+    this.capas = [n_entrada, n_oculta, n_salida];
+    this.alfa = alfa;
+    this.pesos_o = Array(n_entrada)
+      .fill()
+      .map(() =>
+        Array(n_oculta)
+          .fill()
+          .map(() => getRandomNumber(1, -1))
+      );
+    this.pesos_s = Array(n_oculta)
+      .fill()
+      .map(() =>
+        Array(n_salida)
+          .fill()
+          .map(() => getRandomNumber(1, -1))
+      );
+    this.bias_o = Array.from({ length: n_oculta }, () =>
+      getRandomNumber(1, -1)
+    );
+    this.bias_s = Array.from({ length: n_salida }, () =>
+      getRandomNumber(1, -1)
+    );
+    this.salidas_o = Array(n_oculta);
+    this.salidas_s = Array(n_salida);
   }
 
-  /**
-   * Función para clasificar un arreglo de n_c[0] valores
+  /** Clasifica el arreglo de entradas x y devuelve el arreglo con el valor de salida de las neuronas de salida
    * @param {array} x
    * @returns {array}
    */
-  clasificar(x) {
-    let sum;
-    let y = [];
+  classify(x) {
+    //Calcúlo de la salida de la capa oculta con los valores de entrada y los pesos de la capa oculta
+    this.salidas_o = this.calculateSalidas(
+      x,
+      this.capas[0],
+      this.capas[1],
+      this.pesos_o,
+      this.bias_o
+    );
+    //Calcúlo de la salida de la capa de salida con los valores de la capa oculta y los pesos de la capa de salida
+    this.salidas_s = this.calculateSalidas(
+      this.salidas_o,
+      this.capas[1],
+      this.capas[2],
+      this.pesos_s,
+      this.bias_s
+    );
 
-    if (x.length === this.nc[0]) {
-      //Calcúlo de la primer salida en base a la capa de entrada
-      for (let j = 0; j < this.nc[1]; j++) {
-        sum = this.bias[0][j];
-        for (let k = 0; k < this.nc[0]; k++) {
-          sum += x[k] * this.pesos[0][k][j];
-        }
-        this.salidas[0][j] = sum;
-      }
-
-      //Calcúlo de las demas salidas en base a las capas ocultas
-      for (let i = 1; i < this.nc.length - 1; i++) {
-        for (let j = 0; j < this.nc[i + 1]; j++) {
-          sum = this.bias[i][j];
-          for (let k = 0; k < this.nc[i]; k++) {
-            sum += this.salidas[i - 1][j] * this.pesos[i][k][j];
-          }
-          this.salidas[i][j] = sum;
-        }
-      }
-
-      //Asignamos las salidas de la última capa redondeando
-      for (let i = 0; i < this.nc[this.nc.length - 1]; i++) {
-        y[i] = Math.round(this.salidas[this.nc.length - 2][i]);
-      }
-
-      return y;
-    } else {
-      console.log("Las cantidad de entradas no conincide");
-      return false;
-    }
+    //Regresa el arreglo resultante del calcúlo
+    return this.salidas_s.map((e) => Math.round(e));
   }
 
-  /**
-   * Entrenar la rna en base a un array de entrdas y el de los resultados esperados para ese array
+  training(x, values) {
+    let cambio_s = Array(this.capas[2]);
+    let cambio_o = Array(this.capas[1]);
+
+    this.classify(x);
+    //Calcúlo de los cambios que se necesitan hacer en la capa de salida con la formula dY=(y'-y)Df(y)
+    for (let i = 0; i < this.capas[2]; i++) {
+      cambio_s[i] =
+        (values[i] - this.salidas_s[i]) * dfSigmoid(this.salidas_s[i]);
+    }
+    //Cálculo de los cambios necesarios en la capa oculta con la formula dH=w*dY*Df(h)
+    for (let i = 0; i < this.capas[1]; i++) {
+      let err = 0;
+      //Primero necesitamos calcúlar w*dY
+      for (let j = 0; j < this.capas[2]; j++)
+        err += this.pesos_s[i][j] * cambio_s[j];
+      cambio_o[i] = err * dfSigmoid(this.salidas_o[i]);
+    }
+    //Actualizar los pesos en base a estos cambios
+    this.bias_s = this.updateBias(this.bias_s, cambio_s);
+    this.bias_o = this.updateBias(this.bias_o, cambio_o);
+    this.pesos_s = this.updateWeights(this.pesos_s, cambio_s, this.salidas_o);
+    this.pesos_o = this.updateWeights(this.pesos_o, cambio_o, x);
+  }
+
+  /** Regresa el arreglo de salida realizando la multiplicación de matrices sumado al bias
    * @param {array} x
-   * @param {array} value
+   * @param {int} ancho
+   * @param {int} alto
+   * @param {array(array)} pesos
+   * @param {array} bias
+   * @returns {array}
    */
-  entrenar(x, value) {
-    if (
-      x.length === this.nc[0] &&
-      value.length === this.nc[this.nc.length - 1]
-    ) {
-      //Clasificamos los valores ingresados
-      this.clasificar(x);
-
-      let errores = [];
-      errores[this.salidas.length - 1] = new Array(this.nc[this.nc.length - 1]);
-
-      //Calcúlo de los errores de la capa de salida con base a los resultados esperados
-      for (let i = 0; i < this.nc[this.nc.length - 1]; i++) {
-        const error = value[i] - Math.round(this.salidas[this.nc.length - 2][i]);
-        errores[this.salidas.length - 1][i] =
-          error * dfSigmoid(this.salidas[this.salidas.length - 1][i]);
+  calculateSalidas(x, ancho, alto, pesos, bias) {
+    let salidas = [];
+    let res;
+    for (let i = 0; i < alto; i++) {
+      res = bias[i];
+      for (let j = 0; j < ancho; j++) {
+        res += x[j] * pesos[j][i];
       }
-
-      //Cálculo de los errores de las demas capas internas en base a la anterior
-      for (let i = this.nc.length - 3; i >= 0; i--) {
-        errores[i] = new Array(this.salidas[i].length);
-        for (let j = 0; j < this.nc[i + 1]; j++) {
-          let err = 0;
-          for (let k = 0; k < this.nc[i + 2]; k++) {
-           //debugger
-            err += errores[i+1][k]*this.pesos[this.nc.length-2-i][j][k]
-          }
-          errores[i][j] = err;
-        }
-      }
-
-      console.log(errores)
-    } else {
-      console.log("Las cantidad de entradas y salidas no conincide");
-
-      return false;
+      salidas[i] = fSigmoid(res);
     }
+    return salidas;
   }
 
-  pesoInicial(max = 1, min = 0) {
-    return Math.random() * (max - min) + min;
+  /** Actualiza el bias con el array de cambios
+   * @param {array} bias 
+   * @param {array} cambio 
+   * @returns {array} bias actualizado
+   */
+  updateBias(bias, cambio) {
+    return bias.map((e, i) => e + this.alfa * cambio[i]);
+  }
+
+  /** Actuializa la tabla de pesos con la formula w+=a*H*dH
+   * @param {array(array)} pesos 
+   * @param {array} cambio 
+   * @param {array} entrada 
+   * @returns {array(array)} matriz de peso actualizada
+   */
+  updateWeights(pesos, cambio, entrada) {
+    return Array(entrada.length)
+      .fill()
+      .map((_, i) =>
+        Array(cambio.length)
+          .fill()
+          .map((_, j) => pesos[i][j] + entrada[i] * cambio[j] * this.alfa)
+      );
   }
 }
