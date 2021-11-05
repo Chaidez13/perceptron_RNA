@@ -54,7 +54,6 @@ class RNA {
       this.pesos_s,
       this.bias_s
     );
-
     //Regresa el arreglo resultante del calcúlo
     return this.salidas_s.map((e) => Math.round(e));
   }
@@ -67,7 +66,8 @@ class RNA {
     //Calcúlo de los cambios que se necesitan hacer en la capa de salida con la formula dY=(y'-y)Df(y)
     for (let i = 0; i < this.capas[2]; i++) {
       cambio_s[i] =
-        (values[i] - this.salidas_s[i]) * dfSigmoid(this.salidas_s[i]);
+        (values[i] - Math.round(this.salidas_s[i])) *
+        dfSigmoid(this.salidas_s[i]);
     }
     //Cálculo de los cambios necesarios en la capa oculta con la formula dH=w*dY*Df(h)
     for (let i = 0; i < this.capas[1]; i++) {
@@ -106,8 +106,8 @@ class RNA {
   }
 
   /** Actualiza el bias con el array de cambios
-   * @param {array} bias 
-   * @param {array} cambio 
+   * @param {array} bias
+   * @param {array} cambio
    * @returns {array} bias actualizado
    */
   updateBias(bias, cambio) {
@@ -115,9 +115,9 @@ class RNA {
   }
 
   /** Actuializa la tabla de pesos con la formula w+=a*H*dH
-   * @param {array(array)} pesos 
-   * @param {array} cambio 
-   * @param {array} entrada 
+   * @param {array(array)} pesos
+   * @param {array} cambio
+   * @param {array} entrada
    * @returns {array(array)} matriz de peso actualizada
    */
   updateWeights(pesos, cambio, entrada) {
